@@ -28,34 +28,7 @@ colcon build --symlink-install \
 source install/setup.bash
 ```
 
-后续修改自己的功能包时，只编译对应功能包，例如：
-
-```bash
-cd ~/ramr_ws
-source /opt/ros/humble/setup.bash
-source install/setup.bash
-
-colcon build --symlink-install \
-  --packages-select ramr_navigation
-
-source install/setup.bash
-```
-
-查看当前工作区识别到的 ROS 2 包：
-
-```bash
-cd ~/ramr_ws
-colcon list
-```
-
 ## Task 1：真机底盘驱动接入
-
-检查底盘串口：
-
-```bash
-ls -l /dev/wheeltec_controller
-```
-
 启动底盘：
 
 ```bash
@@ -94,77 +67,89 @@ ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist \
 "{linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}"
 ```
 
-## Task 3：LiDAR、IMU、Odometry 与 TF 验证
+## Task 3：各种传感器与状态数据验证
 
-查看当前 Topic：
+本任务用于验证激光雷达、IMU、摄像头、里程计和 TF 是否正常工作。
+
+当前设备对应关系应为：
+
+```text
+/dev/wheeltec_controller -> /dev/ttyACM1
+/dev/wheeltec_lidar -> /dev/ttyACM0
+Integrated Webcam -> /dev/video0
+```
+### 启动机器人
 
 ```bash
-ros2 topic list
+cd ~/ramr_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 launch turn_on_wheeltec_robot turn_on_wheeltec_robot.launch.py
 ```
 
-### LiDAR
+### 启动雷达
 
-查找激光雷达 Topic：
+如果机器人启动文件没有自动启动雷达：
 
 ```bash
-ros2 topic list | grep scan
+source /opt/ros/humble/setup.bash
+source ~/ramr_ws/install/setup.bash
+ros2 launch turn_on_wheeltec_robot wheeltec_lidar.launch.py
 ```
 
-检查激光数据：
+在 RViz2 中显示雷达：
 
 ```bash
-ros2 topic echo /scan
-ros2 topic hz /scan
+rviz2
 ```
 
-### IMU
+将 `Fixed Frame` 设置为 `laser`，添加 `LaserScan`，Topic 选择 `/scan`。
 
-查找 IMU Topic：
+### 启动摄像头
 
 ```bash
-ros2 topic list | grep imu
+source /opt/ros/humble/setup.bash
+source ~/ramr_ws/install/setup.bash
+ros2 run usb_cam usb_cam_node_exe --ros-args -p video_device:=/dev/video0 -p frame_id:=camera_link
 ```
 
-确认实际 Topic 名称后，再检查数据和频率：
+另开终端显示 ROS2 图像：
 
 ```bash
-ros2 topic echo <imu_topic>
-ros2 topic hz <imu_topic>
+source /opt/ros/humble/setup.bash
+source ~/ramr_ws/install/setup.bash
+ros2 run rqt_image_view rqt_image_view
 ```
 
-### Odometry
+选择 `/image_raw`。
 
-查找里程计 Topic：
+直接显示摄像头画面：
 
 ```bash
-ros2 topic list | grep odom
+ffplay -f v4l2 -i /dev/video0
 ```
 
-检查里程计数据：
+### 检查 IMU
 
 ```bash
-ros2 topic echo /odom
+ros2 topic list | grep -i imu
+ros2 topic echo /imu/data_raw --once
+ros2 topic hz /imu/data_raw
+```
+
+### 检查里程计
+
+```bash
+ros2 topic echo /odom --once
 ros2 topic hz /odom
 ```
 
-### TF
-
-检查 TF 发布频率：
+### 检查 TF
 
 ```bash
-ros2 topic hz /tf
-```
-
-检查 `odom -> base_link`：
-
-```bash
-ros2 run tf2_ros tf2_echo odom base_link
-```
-
-生成 TF 树：
-
-```bash
-ros2 run tf2_tools view_frames
+ros2 run tf2_ros tf2_echo odom_combined base_footprint
+ros2 run tf2_ros tf2_echo base_footprint laser
+ros2 run tf2_ros tf2_echo base_link camera_link
 ```
 
 ## Task 4：状态估计与传感器融合
