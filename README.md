@@ -23,8 +23,6 @@ flowchart LR
 
 ## 项目结构
 
-```text
-## 项目结构
 
 ```text
 ramr_ws/
@@ -43,7 +41,6 @@ ramr_ws/
 
 - `ramr_*`：项目自定义功能包
 - `vendor/`：WHEELTEC 官方源码及第三方依赖
-```
 
 ## 项目阶段
 
