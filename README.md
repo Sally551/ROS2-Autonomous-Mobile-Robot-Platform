@@ -8,12 +8,10 @@
 
 当前状态估计系统融合轮式里程计与 IMU 数据，输出机器人连续运动状态。
 
-```mermaid
-flowchart LR
-    A["底盘编码器<br/>/odom"] --> C["扩展卡尔曼滤波<br/>ekf_filter_node"]
-    B["IMU<br/>/imu/data_raw"] --> C
-    C --> D["融合里程计<br/>/odom_combined"]
-    C --> E["坐标变换<br/>odom_combined → base_footprint"]
+```text
+/odom ───────────┐
+                 ├──→ EKF卡尔曼融合 ──→ /odom_combined
+/imu/data_raw ───┘
 ```
 
 - `/odom`：提供编码器计算的前进速度、横向速度约束和旋转速度。
