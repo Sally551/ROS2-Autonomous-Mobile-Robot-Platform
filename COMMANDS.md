@@ -83,11 +83,12 @@ ps -ef | grep '[e]kf_node'
 ## Task 5：SLAM建图
 
 终端 1：基础系统
+```bash
 source /opt/ros/humble/setup.bash
 source ~/wheeltec_ws/install/setup.bash
 source ~/ramr_ws/install/setup.bash
 ros2 launch ramr_bringup robot_bringup.launch.py
-
+```
 终端 2：启动雷达：
 
 ```bash
