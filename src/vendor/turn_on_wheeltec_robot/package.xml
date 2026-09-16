@@ -19,6 +19,8 @@
   <build_depend>tf2_geometry_msgs</build_depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>rviz2</exec_depend>
   <depend>ament_index_cpp</depend>
   <depend>turtlesim</depend>
   <depend>geometry_msgs</depend>
